@@ -40,9 +40,9 @@ def parse_detail(html, link):
         return None
     
     
-    address_line1 = extract_text(html, 'div.cNrkoR > h1',0)
+    address_line1 = extract_text(html, 'div.sc-ccfad107-0 > h1',0)
     # print(address_line1)
-    address_line2 = extract_text(html,'div.cNrkoR > p',0)
+    address_line2 = extract_text(html,'div.sc-ccfad107-0 > p',0)
     # print(address_line2)
     
     # Extracting the address elements from the address_line1 and address_line2
@@ -69,7 +69,7 @@ def parse_detail(html, link):
     
     new_property = Property(
         web_id = link.split('/')[-1],
-        title=extract_text(html, "div.sc-1898sr3-1 > h1", 0),
+        title=extract_text(html, "div.sc-53bec0d3-1 > h1", 0),
         price=extract_text(html, "p.pp-property-price", 0),
         description=extract_text(html, "div.sc-1898sr3-1 > p.FViVo", 0),
         img=src_attribute,
@@ -94,10 +94,10 @@ def parse_detail(html, link):
         )
     )
     Property.save(new_property)
-    print(new_property.link)
+    print(f"title: {new_property.title}")
 
 def parse_links(html):
-    links = html.css("div.fPWQSX > ul > li > div > a")
+    links = html.css("div.iCRFOu > ul > li > div > a")
     print(links)
     return {link.attributes['href'] for link in links}
 
