@@ -6,24 +6,46 @@ from urllib.parse import urljoin
 import re
 import time
 
+
+
 BASE_URL = 'https://www.propertypal.com'
-url = 'https://www.propertypal.com/property-for-sale/lisburn'
+url = 'https://www.propertypal.com/property-for-sale/lisburn-area'
 
 @dataclass
 class Response:
     body_html: HTMLParser
     next_page: dict
 
+def next_page(html):
+
+    for link in html.css('a'):
+        if link.css_first('p'):
+            p_text = link.css_first('p').text()
+            if p_text == "Next":
+                
+                url = link.attributes['href']
+                # print(url)
+                next_url = urljoin(BASE_URL, url)
+                return next_url
+        else:
+            next_url = None
+    return next_url
+
 def get_page(client ,url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"}
     resp = client.get(url, headers=headers, timeout=15)
-    print(url)
+    # print(url)
+    
     html = HTMLParser(resp.text)
-    if html.css_first('a[aria-label="next page"]'):
-        next_page = html.css_first('a[aria-label="next page"]').attributes
-    else:
-        next_page = {"href": False}
-    return Response(body_html=html, next_page=next_page)
+    
+    # next_page = next_page(html)
+    
+    # if html.css_first('a[aria-label="next page"]'):
+    #     next_page = html.css_first('a[aria-label="next page"]').attributes
+    # else:
+    #     next_page = {"href": False}
+    return Response(body_html=html, next_page=next_page(html))
+    # return all_a_tags
 
 def extract_text(html, selector, index ):
     try:
@@ -62,7 +84,7 @@ def parse_detail(html, link):
     # Get the src attribute value
     if image_element:
         src_attribute = image_element.attributes.get('src')
-        print(src_attribute)
+        # print(src_attribute)
     else:
         src_attribute = None
     
@@ -94,11 +116,11 @@ def parse_detail(html, link):
         )
     )
     Property.save(new_property)
-    print(f"title: {new_property.title}")
+    print(f"title: {new_property.web_id}")
 
 def parse_links(html):
     links = html.css("div.iCRFOu > ul > li > div > a")
-    print(links)
+    # print(links)
     return {link.attributes['href'] for link in links}
 
 
@@ -110,21 +132,38 @@ def detail_page_loop(client, page):
         parse_detail(page.body_html, link)
 
 def pagination_loop(client):
-    url = 'https://www.propertypal.com/property-for-sale/lisburn'
+    url = 'https://www.propertypal.com/property-for-sale/lisburn-area'
     while True:
         page = get_page(client, url)
         detail_page_loop(client, page)
-        if page.next_page['href'] is False:
+        if page.next_page is None:
             client.close()
             break
         else:
-            url = urljoin(BASE_URL, page.next_page['href'])
+            url = page.next_page
             print(url)
             time.sleep(1)
 
 def main():
     client = httpx.Client()
     pagination_loop(client)
+
+    # url = 'https://www.propertypal.com/property-for-sale/lisburn'
+    # a = get_page(client,url)
+    # print(a.next_page)
+
+    # for link in a:
+    #     if link.css_first('p'):
+    #         p_text = link.css_first('p').text()
+    #         if p_text == "Next":
+                
+    #             next_url = link.attributes['href']
+    #             print(next_url)
+    #     else:
+    #         print("this is not a Next page link")
+        
+            
+        
 
 if __name__ == "__main__":
     main()

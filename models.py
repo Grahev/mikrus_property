@@ -82,7 +82,8 @@ class Property:
         result = c.fetchone()
         if result:
             # Property exists, update its values
-            pass
+            print('Property in database')
+            # pass
             # query = '''UPDATE properties SET title=?, price=?, link=?, img=?, description=?, 
             #            address_no=?, address_street=?, address_city=?, address_postcode=?,
             #            key_info_price=?, key_info_style=?, key_info_bedrooms=?, key_info_bathrooms=?, key_info_reception=?,
